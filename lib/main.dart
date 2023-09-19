@@ -2,12 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:grade_ease_app/myWidgets.dart';
 import 'package:grade_ease_app/screens/onBoardscreen.dart';
 import 'package:grade_ease_app/constants.dart';
 
 final getX = GetStorage();
 Constants constants = Constants();
-//  Mywidget mywidgets = Mywidget();
+ MyWidget myWidgets = MyWidget();
 
 Future <void> main() async{
 

@@ -1,7 +1,10 @@
 import 'package:flutter/gestures.dart';
+import 'package:grade_ease_app/apiRequests.dart';
 import 'package:grade_ease_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:grade_ease_app/screens/adminMode/authenticatin/login.dart';
+import 'package:grade_ease_app/screens/adminMode/dashBoard.dart';
+import 'package:grade_ease_app/screens/adminMode/homePage.dart';
 
 class SignUpScreen extends StatefulWidget {
  const SignUpScreen({Key? key}): super(key: key);
@@ -12,9 +15,11 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen>{
 
+  final nameEditingController = TextEditingController();
   final _textEditingController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  bool isLoading = false;
 
   bool isPasswordObscured = false;
   bool isConfirmPasswordObscured = false;
@@ -100,48 +105,45 @@ class _SignUpScreenState extends State<SignUpScreen>{
                         width: 400,
                         child: Column(
                           children: [
-                            InkWell(
-                          onTap: (){
-                            ///////////////// Push to the next page after user has selected a tier
-                            
-                            ///// Navigation.push
-                              Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(builder: (context) => SignUpScreen()),
-                                (route) => false,
-                              );
-                          },
-                          child: Container(
-                            // width: 200,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: constants.appMainColor
-                              )
+                            Container(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Name",
+                             style: TextStyle(fontSize: 14,
+                              color: constants.appMainColor
+                             ),),
+                            SizedBox(height: 5,),
+                            Container(
+                              height: 48,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  width: 1,
+                                  color: constants.appMainColor.withOpacity(0.2)
+                                )
+                              ),
+                              child: TextFormField(
+                                onChanged: (value){
+                                  setState(() {
+                                    
+                                  });
+                                },
+                                keyboardType: TextInputType.text,
+                                controller: nameEditingController,
+                                decoration: InputDecoration(
+                                  focusedBorder:OutlineInputBorder(
+                                borderSide: BorderSide.none, // Remove the border when focused
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide.none, // Remove the border when enabled
+                              ),
+                                  hintText: "name",
+                                ),
+                              ),
                             ),
-                            child: Center(
-                              child: Text(
-                                "Sign Up with Google",
-                                style: TextStyle(
-                                  color: constants.appMainColor,
-                                  fontSize: 14),),
-                            ),
-                          ),
+                          ],
                         ),
-
-                      SizedBox(height: 30,),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Divider(thickness: 2,), 
-                          Text(
-                                "OR",
-                                style: TextStyle(
-                                  color: constants.appMainColor,
-                                  fontSize: 14),),
-                          Divider(thickness: 2,)
-                        ],
                       ),
 
                       Container(
@@ -323,19 +325,59 @@ class _SignUpScreenState extends State<SignUpScreen>{
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           InkWell(
-                          onTap: (){
-                            /////////////////// Push to the next page after user has selected a tier
+                          onTap: isLoading? (){}: (){
+                            if(nameEditingController.text.isEmpty 
+                            || passwordController.text.isEmpty 
+                            || confirmPasswordController.text.isEmpty
+                            || _textEditingController.text.isEmpty ){
+                                print("Fill all inputs");
+                                myWidgets.showToast(message: "Fill all inputs");
+
+                            }
+                            else{
+                              if(passwordController.text.trim() != confirmPasswordController.text.trim()){
+                                // myWidget
+                                print("Incorrect Password");
+                                myWidgets.showToast(message: "Incorrect Password");
+                              }
+                              else{
+                                setState(() {
+                                  isLoading= true;
+                                });
+
+                                print("Before the signup mentpr");
+
+                                signUpMentor(
+                              fullname: nameEditingController.text.trim(),
+                              email: _textEditingController.text.trim(), 
+                              password: passwordController.text.trim()).then((snapshot) {
+
+                                print(snapshot);
+
+                                setState(() {
+                                  isLoading= true;
+                                });
+                              
+                              getX.write(constants.GETX_TOKEN, snapshot["token"]);
+                              getX.write(constants.GETX_FULLNAME, snapshot["user"]["name"]);
+                              // getX.write(constants.GETX_IS_LOGGED_IN, "true");
+                              getX.write(constants.GETX_USER_ID, snapshot["user"]["_id"]);
+
+                              setState(() {
+                                  isLoading= false;
+                                });
+
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(builder: (context) => HomePage()),
+                                (route) => false,
+                              );
+
+                            });
+                              }
+                            }
+
+
                             
-                            // if(selectedTier.isEmpty){
-                            //   mywidgets.displayToast(msg: "Please select a tier");
-                            // }
-                            // else{
-                            //   ///// Navigation.push
-                            //   Navigator.of(context).pushAndRemoveUntil(
-                            //     MaterialPageRoute(builder: (context) => Registration()),
-                            //     (route) => false,
-                            //   );
-                            // }
               
                             //will save this parameter to state management later
                           },
@@ -344,11 +386,20 @@ class _SignUpScreenState extends State<SignUpScreen>{
                             height: 36,
                             color: constants.appMainColor,
                             child: Center(
-                              child: Text(
-                                "Sign Up",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14),),
+                              child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Submit",
+                          style: TextStyle(fontSize: 14, color: Colors.white),
+                        ),
+                        SizedBox(width: 10,),
+                       isLoading? SizedBox(
+                        height: 20,
+                        width: 20 ,
+                        child: CircularProgressIndicator(color: Colors.white)): Icon(Icons.arrow_forward, color: Colors.white,)
+                      ],
+                    ),
                             ),
                           ),
                         ),

@@ -1,7 +1,9 @@
 import 'package:flutter/gestures.dart';
+import 'package:grade_ease_app/apiRequests.dart';
 import 'package:grade_ease_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:grade_ease_app/screens/adminMode/authenticatin/signUp.dart';
+import 'package:grade_ease_app/screens/adminMode/homePage.dart';
 
 class LoginScreen extends StatefulWidget {
  const LoginScreen({Key? key}): super(key: key);
@@ -12,6 +14,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>{
 
+  bool isLoading = false;
   final _textEditingController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -291,31 +294,63 @@ class _LoginScreenState extends State<LoginScreen>{
 
                       InkWell(
                       onTap: (){
-                        /////////////////// Push to the next page after user has selected a tier
-                        
-                        // if(selectedTier.isEmpty){
-                        //   mywidgets.displayToast(msg: "Please select a tier");
-                        // }
-                        // else{
-                        //   ///// Navigation.push
-                        //   Navigator.of(context).pushAndRemoveUntil(
-                        //     MaterialPageRoute(builder: (context) => Registration()),
-                        //     (route) => false,
-                        //   );
-                        // }
+                            if( passwordController.text.isEmpty 
+                            || _textEditingController.text.isEmpty ){
+                                print("Fill all inputs");
+                                myWidgets.showToast(message: "Fill in All inputs");
+
+                            }
+                            else{
+
+                                setState(() {
+                                  isLoading  = true;
+                                });
+                              
+                                loginMentor(
+                              email: _textEditingController.text.trim(), 
+                              password: passwordController.text.trim()).then((snapshot) {
+
+                              print(snapshot);
+
+                              setState(() {
+                                  isLoading= false;
+                                });
+
+                              if(snapshot["msg"] == "Login successful"){
+                                Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(builder: (context) => HomePage()),
+                                (route) => false,
+                              );
+                              }
+
+                            });
+                              
+                            }
+
+
+                            
               
-                        //will save this parameter to state management later
-                      },
+                            //will save this parameter to state management later
+                          },
                       child: Container(
                         width: 400,
                         height: 36,
                         color: constants.appMainColor,
                         child: Center(
-                          child: Text(
-                            "Log in",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14),),
+                          child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Log In",
+                          style: TextStyle(fontSize: 14, color: Colors.white),
+                        ),
+                        SizedBox(width: 10,),
+                       isLoading? SizedBox(
+                        height: 20,
+                        width: 20 ,
+                        child: CircularProgressIndicator(color: Colors.white)): Icon(Icons.arrow_forward, color: Colors.white,)
+                      ],
+                    ),
                         ),
                       ),
                         ),

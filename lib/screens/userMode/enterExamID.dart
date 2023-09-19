@@ -1,4 +1,5 @@
 
+import 'package:grade_ease_app/apiRequests.dart';
 import 'package:grade_ease_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:grade_ease_app/screens/userMode/examPage.dart';
@@ -12,6 +13,7 @@ class EnterExamIDScreen extends StatefulWidget {
 
 class _EnterExamIDScreenState extends State<EnterExamIDScreen>{
 
+  bool isLoading = false;
   final _textEditingController = TextEditingController();
 
   @override
@@ -94,6 +96,7 @@ class _EnterExamIDScreenState extends State<EnterExamIDScreen>{
                           )
                         ),
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Container(
                               height: 40,
@@ -119,8 +122,29 @@ class _EnterExamIDScreenState extends State<EnterExamIDScreen>{
                             ),
 
                             InkWell(
-                              onTap: (){
-                                Navigator.push(context, MaterialPageRoute(builder: (context)=> ExamPage(questionId: "uiuiui")));
+                              onTap: isLoading? (){}: (){
+                                if(_textEditingController.text.isNotEmpty){
+
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+
+                                    loginStudent(student_id: _textEditingController.text.trim()).then((value) {
+
+                                      print(value);
+                                      Navigator.push(context, MaterialPageRoute(
+                                      builder: (context)=> ExamPage(
+                                        exam_id: value["student"]["exam_id"],
+                                      )));
+                                      setState(() {
+                                      isLoading = true;
+                                    });
+                                    
+                                    });
+
+                                }
+
+                                
                               },
                               child: Container(
                                 height: 40,
@@ -129,7 +153,10 @@ class _EnterExamIDScreenState extends State<EnterExamIDScreen>{
                                   color: constants.appMainColor,
                                   borderRadius: BorderRadius.circular(4)
                                 ),
-                                child: Center(child: Icon(Icons.arrow_forward, color: Colors.white,)),
+                                child: Center(child: isLoading? SizedBox(
+                                height: 20,
+                                width: 20 ,
+                                child: CircularProgressIndicator(color: Colors.white)): Icon(Icons.arrow_forward, color: Colors.white,)),
                               ),
                             )
                           ],
